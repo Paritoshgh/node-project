@@ -1,35 +1,39 @@
-pipeline{
-    agent { label 'dev-server' }
-    
-    stages{
-        stage("Code Clone"){
-            steps{
-                echo "Code Clone Stage"
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
+pipeline {
+    agent any
+
+    stages {
+        stage('Code') {
+            steps {
+                echo 'Cloning from GIT'
+                git branch: 'master', url: 'https://github.com/Paritoshgh/node-project.git'
+            }
+        }    
+        stage('Build') {
+            steps {
+                echo 'Building'
+                sh 'docker build . -t ghadgeparitosh10/node-todo:latest'
             }
         }
-        stage("Code Build & Test"){
-            steps{
-                echo "Code Build Stage"
-                sh "docker build -t node-app ."
-            }
-        }
-        stage("Push To DockerHub"){
-            steps{
-                withCredentials([usernamePassword(
-                    credentialsId:"dockerHubCreds",
-                    usernameVariable:"dockerHubUser", 
-                    passwordVariable:"dockerHubPass")]){
-                sh 'echo $dockerHubPass | docker login -u $dockerHubUser --password-stdin'
-                sh "docker image tag node-app:latest ${env.dockerHubUser}/node-app:latest"
-                sh "docker push ${env.dockerHubUser}/node-app:latest"
+        stage('Push') {
+            steps {
+                echo 'Push Image to Docker Hub'
+                withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DockerHubPassword',usernameVariable: 'DockerHubUser')]){
+                sh "docker login -u ${env.DockerHubUser} -p ${env.DockerHubPassword}"
+                sh 'docker push ghadgeparitosh10/node-todo:latest'
                 }
             }
         }
-        stage("Deploy"){
-            steps{
-                sh "docker compose down && docker compose up -d --build"
+        stage('Test') {
+            steps {
+                echo 'Testing'
+                sh 'docker run --rm ghadgeparitosh10/node-todo:latest sh -c "npx mocha test.js"'
             }
+        }    
+        stage('Deploy') {
+            steps {
+                echo 'Deploying to PROD'
+                sh "docker-compose down && docker-compose up -d"
+            }    
         }
     }
 }
