@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   web:
-    image: trainwithshubham/node-app:latest
+    container_name: 'node-app'
+    image: ghadgeparitosh10/node-todo:latest
     ports:
-      - "8000:8000"
+      - 8000:8000
