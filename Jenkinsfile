@@ -1,3 +1,4 @@
+/* groovylint-disable-next-line CompileStatic */
 pipeline {
     agent any
 
@@ -7,7 +8,7 @@ pipeline {
                 echo 'Cloning from GIT'
                 git branch: 'master', url: 'https://github.com/Paritoshgh/node-project.git'
             }
-        }    
+        }
         stage('Build') {
             steps {
                 echo 'Building'
@@ -17,9 +18,14 @@ pipeline {
         stage('Push') {
             steps {
                 echo 'Push Image to Docker Hub'
-                withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DockerHubPassword',usernameVariable: 'DockerHubUser')]){
-                sh "docker login -u ${env.DockerHubUser} -p ${env.DockerHubPassword}"
-                sh 'docker push ghadgeparitosh10/node-todo:latest'
+                withCredentials([
+                usernamePassword(
+                credentialsId: 'DockerHub',
+                passwordVariable: 'DockerHubPassword',
+                usernameVariable: 'DockerHubUser'
+                )]) {
+                    sh "docker login -u ${env.DockerHubUser} -p ${env.DockerHubPassword}"
+                    sh 'docker push ghadgeparitosh10/node-todo:latest'
                 }
             }
         }
@@ -28,12 +34,12 @@ pipeline {
                 echo 'Testing'
                 sh 'docker run --rm ghadgeparitosh10/node-todo:latest sh -c "npx mocha test.js"'
             }
-        }    
+        }
         stage('Deploy') {
             steps {
                 echo 'Deploying to PROD'
-                sh "docker-compose down && docker-compose up -d"
-            }    
+                sh 'docker-compose down && docker-compose up -d'
+            }
         }
     }
 }
