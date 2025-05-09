@@ -1,7 +1,6 @@
 /* groovylint-disable-next-line CompileStatic */
 pipeline {
-    agent label { 'agent1' }
-    
+    agent { label 'agent1' }
     stages {
         stage('Code') {
             steps {
